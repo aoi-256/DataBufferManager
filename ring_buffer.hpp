@@ -1,8 +1,7 @@
-#ifndef INC_RING_BUFFER_H_
-#define INC_RING_BUFFER_H_
+#ifndef INC_RING_BUFFER_HPP_
+#define INC_RING_BUFFER_HPP_
 
 #include <cstdint>
-#include <stdexcept>
 
 template <typename T, uint8_t Dimensions = 2>
 class RingBuffer {
@@ -31,10 +30,6 @@ class RingBuffer {
                 }
                 cols_count = cols;
 
-            }
-            else{
-
-                throw std::invalid_argument("Unsupported dimensions");
             }
             index = 0;
         }
@@ -111,4 +106,4 @@ class RingBuffer {
         T** buffer_2d = nullptr; // 2次元配列用
 };
 
-#endif /* INC_RING_BUFFER_H_ */
+#endif /* INC_RING_BUFFER_HPP_ */
