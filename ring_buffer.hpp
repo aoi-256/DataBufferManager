@@ -1,109 +1,85 @@
-#ifndef INC_RING_BUFFER_HPP_
-#define INC_RING_BUFFER_HPP_
+/*
+ * RingBuffer.h
+ *
+ *  Created on: Apr 22, 2025
+ *      Author: Sezakiaoi
+ */
+
+#ifndef INC_RINGBUFFER_HPP_
+#define INC_RINGBUFFER_HPP_
 
 #include <cstdint>
 
-template <typename T, uint8_t Dimensions = 2>
+template<typename T>
 class RingBuffer {
 
     public:
-        /* コンストラクタ
-        * @param[in] rows: 行数（1次元の場合は全体の要素数）
-        * @param[in] cols: 列数（2次元の場合のみ使用）
-        */
-        RingBuffer(uint8_t rows, uint8_t cols = 1) {
+        /* @brief コンストラクタ
+         * @param [in]dim データの次元数
+         * @param [in]size バッファのサイズ
+         * @note バッファはdim*sizeのサイズで確保される
+         */
+        RingBuffer(uint8_t dim, uint8_t size){
+            this->dim = dim;
+            this->size = size;
+            this->index = 0;
+            buffer = new T[dim * size];
+        }
 
-            if (Dimensions == 1) {
+        /* @brief デストラクタ
+         * @note バッファのメモリを解放する
+         */
+        ~RingBuffer(){
+            delete[] buffer;
+        }
 
-                max_index = rows - 1;
-                buffer = new T[rows];
+        /* @brief データをセットする
+         * @param [in]data セットするデータのポインタ
+         * @note データは[dim][1]の配列である必要がある(T*型になる)
+         * @note データはバッファのサイズを超えないようにする必要がある
+         */
+        void SetData(const T* data){
 
-            } 
-            else if (Dimensions == 2) {
+            for(uint8_t i = 0; i < dim; i++){
+                buffer[index * dim + i] = data[i];
+            }
+            index = (index + 1) % size;
+        }
 
-                max_index = rows - 1;
-                buffer_2d = new T*[rows];
-                
-                for(uint8_t i = 0; i < rows; ++i){
+        /* @brief データを取得する
+         * @param [out]data 取得したデータのポインタ
+         * @param [in]n 取得するデータの数
+         * @note データはdim次元の配列である必要がある
+         * @note データはバッファのサイズを超えないようにする必要がある
+         */
+        void GetData(T* data, uint8_t n) const {
+            for(uint8_t k = 0; k < n; k++) {
 
-                    buffer_2d[i] = new T[cols];
+                uint8_t idx;
+
+                if(index == 0) {
+                    idx = (size - k - 1 + size) % size;
+                } 
+                else if(index > k) {
+                    idx = index - k - 1;
+                } 
+                else {
+                    idx = size + index - k - 1;
                 }
-                cols_count = cols;
 
-            }
-            index = 0;
-        }
+                for(uint8_t i = 0; i < dim; i++) {
 
-        // デストラクタ
-        ~RingBuffer() {
-            if (Dimensions == 1){
-
-                delete[] buffer;
-            } 
-            else if (Dimensions == 2){
-
-                for (uint8_t i = 0; i <= max_index; ++i){
-
-                    delete[] buffer_2d[i];
+                    data[k * dim + i] = buffer[idx * dim + i];
                 }
-
-                delete[] buffer_2d;
             }
-        }
-
-        /* データの入力（1次元）
-        * @param[in] value: 入力するデータ
-        */
-        void SetValue(const T& value) {
-
-            buffer[index] = value;
-
-            //indexが最大の場合は0に戻す
-            if(index == max_index){
-
-                index = 0;
-            }
-            else{
-
-                index ++;
-            }
-        }
-
-        /* データの入力（2次元）
-        * @param[in] row: 行インデックス
-        * @param[in] col: 列インデックス
-        * @param[in] value: 入力するデータ
-        */
-        void SetValue(uint8_t row, uint8_t col, const T& value) {
-
-            buffer_2d[row][col] = value;
-        }
-
-        /* データの取得（1次元）
-        * @param[in] idx: インデックス
-        * @return データ
-        */
-        T GetValue(uint8_t idx) const {
-
-            return buffer[idx];
-        }
-
-        /* データの取得（2次元）
-        * @param[in] row: 行インデックス
-        * @param[in] col: 列インデックス
-        * @return データ
-        */
-        T GetValue(uint8_t row, uint8_t col) const {
-
-            return buffer_2d[row][col];
         }
 
     private:
+
+        T* buffer;
+        uint8_t dim;
+        uint8_t size;
         uint8_t index;
-        uint8_t max_index;
-        uint8_t cols_count = 1; // 2次元の場合の列数
-        T* buffer = nullptr;    // 1次元配列用
-        T** buffer_2d = nullptr; // 2次元配列用
 };
 
-#endif /* INC_RING_BUFFER_HPP_ */
+ #endif /* INC_RINGBUFFER_HPP_ */
