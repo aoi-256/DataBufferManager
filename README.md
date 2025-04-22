@@ -4,37 +4,55 @@
 
 とりあえずAIに丸投げtしたサンプルコード
 
+## 使い方
+
+- ほしい次元の配列をコンストラクタで定義する
+
+今回は3*8配列を使いたいので、変数型と合わせてこのように定義します
 ```cpp
-#include <iostream>
-#include "Ringbuffer.hpp"
+const uint8_t dim = 3;
+const uint8_t size = 8;
+RingBuffer<int> rb(dim, size);
+```
 
-int main() {
+- データの入力
+
+今回は3*8配列を定義したので、3要素の配列のポインタを渡します
+```
+int data[3] = {};
+data[0] = 1;
+data[1] = 2;
+data[2] = 3;
+
+rb.SetData(data);
+```
+
+- データの取得
+
+最新のnデータを取得できます
+今回は4データを取得するので、3×4で12要素の配列を利用します
+
+```
+int result[12] = {};
+
+rb.GetData(result, 4):
+```
+
+データはこのように格納されています
+```
+result[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
+```
+
+各要素に分割したいときは、このように書いてください
+```
+int data1[4];
+int data2[4];
+int data3[4];
+
+for(int i=0; i<4; i++){
     
-        // 1次元リングバッファのテスト
-        std::cout << "1D RingBuffer Test:" << std::endl;
-        RingBuffer<int, 1> buffer1D(5); // 要素数5の1次元リングバッファ
-        for (int i = 0; i < 7; ++i) {
-            buffer1D.SetValue(i);
-            std::cout << "Set value: " << i << ", Get value at index " << i % 5 << ": " << buffer1D.GetValue(i % 5) << std::endl;
-        }
-
-        // 2次元リングバッファのテスト
-        std::cout << "\n2D RingBuffer Test:" << std::endl;
-        RingBuffer<int, 2> buffer2D(3, 3); // 3x3の2次元リングバッファ
-        for (uint8_t row = 0; row < 3; ++row) {
-            for (uint8_t col = 0; col < 3; ++col) {
-                buffer2D.SetValue(row, col, row * 10 + col);
-                std::cout << "Set value at (" << (int)row << ", " << (int)col << "): " << row * 10 + col << std::endl;
-            }
-        }
-
-        std::cout << "\nRetrieve values from 2D RingBuffer:" << std::endl;
-        for (uint8_t row = 0; row < 3; ++row) {
-            for (uint8_t col = 0; col < 3; ++col) {
-                std::cout << "Value at (" << (int)row << ", " << (int)col << "): " << buffer2D.GetValue(row, col) << std::endl;
-            }
-        }
-
-    return 0;
+    data1[i] = result[i];
+    data2[i] = result[i+1];
+    data3[i] = result[i+2];
 }
 ```
